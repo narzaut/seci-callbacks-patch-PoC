@@ -1,0 +1,11 @@
+[package]
+name = "td-protocol"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitflags = { version = "2.4", default-features = false }
+
+[features]
+default = []
+kernel = []

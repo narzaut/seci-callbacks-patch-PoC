@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/td-protocol",
+    "crates/td-interface",
+    "crates/driver-loader",
+    "crates/seci-callbacks",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+panic = "abort"
+lto = true

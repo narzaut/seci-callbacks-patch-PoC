@@ -1,0 +1,15 @@
+[package]
+name = "seci-callbacks"
+version = "0.1.0"
+edition = "2021"
+description = "SeCiCallbacks DSE bypass — educational reference implementation"
+
+[dependencies]
+anyhow = "1"
+log = "0.4"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_System_LibraryLoader",
+    "Win32_Foundation",
+] }
