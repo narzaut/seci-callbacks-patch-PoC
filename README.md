@@ -3,6 +3,36 @@
 Research on leveraging a vulnerable kernel driver's own physical memory read/write primitives to bypass Window's DSE and load an unsigned driver, achieving arbitrary kernel code execution.
 
 ---
+```mermaid
+graph TB
+    subgraph Mapper["td-mapper (user mode)"]
+        MAP["mapper.rs<br/>──────────<br/>1. load vuln driver<br/>2. find ntoskrnl base<br/>3. scan phys mem for ntoskrnl<br/>4. patch SeCiCallbacks<br/>5. load payload via SCM<br/>6. restore SeCiCallbacks<br/>7. unload vuln driver"]
+        SECI["seci.rs<br/>──────────<br/>resolve exports from PE<br/>LEA pattern scan fallback<br/>read CiValidateImageHeader<br/>write ZwFlushInstructionCache<br/>restore original pointer"]
+        NTLD["cleanup.rs<br/>──────────<br/>SCM install / start<br/>stop / delete<br/>secure file wipe"]
+    end
+    subgraph Kernel["ntoskrnl.exe"]
+        NT["SeCiCallbacks table<br/>──────────<br/>+0x00 CiValidateImageData<br/>+0x08 CiQueryInformation<br/>+0x10 CiSetPolicyCookie<br/>+0x18 CiSendDetectedError<br/>+0x20 CiValidateImageHeader<br/>+0x28 CiHashMemory"]
+    end
+    subgraph VulnDrv["vulnerable driver (signed, EV cert)"]
+        VD["IOCTL handler<br/>──────────<br/>PHYS_READ_WORD<br/>PHYS_WRITE_WORD<br/>no ACL · no validation"]
+    end
+    subgraph Payload["payload driver (unsigned)"]
+        TD["unsigned-driver.sys<br/>──────────<br/>loaded while DSE is off<br/>provides kernel r/w<br/>to user mode"]
+    end
+    MAP --> SECI
+    MAP --> NTLD
+    MAP -->|"open device → IOCTL r/w"| VD
+    VD -->|"phys mem access"| NT
+    SECI -->|"read original ptr<br/>write ZwFlushInstructionCache<br/>restore on cleanup"| NT
+    NTLD -->|"sc create<br/>sc start"| TD
+    style MAP fill:#a94,stroke:#333,stroke-width:2px,color:#000
+    style SECI fill:#a94,stroke:#333,color:#000
+    style NTLD fill:#a94,stroke:#333,color:#000
+    style NT fill:#49a,stroke:#333,stroke-width:2px,color:#000
+    style VD fill:#c44,stroke:#333,stroke-width:2px,color:#000
+    style TD fill:#4a9,stroke:#333,stroke-width:2px,color:#000
+```
+---
 ## The chain
 ```
 Vulnerable signed driver (EV certificate, loads on stock DSE)
