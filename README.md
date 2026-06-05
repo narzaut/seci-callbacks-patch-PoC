@@ -5,7 +5,7 @@ Research on leveraging a vulnerable kernel driver's own physical memory read/wri
 ---
 ```mermaid
 graph TB
-    subgraph Mapper["td-mapper (user mode)"]
+    subgraph Mapper["driver-loader (user mode)"]
         MAP["mapper.rs<br/>──────────<br/>1. load vuln driver<br/>2. find ntoskrnl base<br/>3. scan phys mem for ntoskrnl<br/>4. patch SeCiCallbacks<br/>5. load payload via SCM<br/>6. restore SeCiCallbacks<br/>7. unload vuln driver"]
         SECI["seci.rs<br/>──────────<br/>resolve exports from PE<br/>LEA pattern scan fallback<br/>read CiValidateImageHeader<br/>write ZwFlushInstructionCache<br/>restore original pointer"]
         NTLD["cleanup.rs<br/>──────────<br/>SCM install / start<br/>stop / delete<br/>secure file wipe"]
